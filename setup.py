@@ -2,10 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name="pyroject",
-    version="0.1.0",
+    version="0.1.3",
     packages=find_packages(),
     include_package_data=True,
-    install_requires=[],
+    install_requires=[
+        "setuptools==80.0",
+    ],
     entry_points={
         "console_scripts": [
             "pyroject=pyroject.cli:main"

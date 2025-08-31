@@ -1,5 +1,5 @@
 # pyroject/cli.py
-import json, subprocess, sys, os, shlex
+import json, subprocess, sys, os, shlex, pkg_resources
 
 PROJECT_FILE = os.path.join(os.getcwd(), "project.json")
 
@@ -42,8 +42,38 @@ def run_script(script_name):
         subprocess.run(command, shell=True)
 
 def install_package(package_name):
-    """Install a single package from pip."""
-    subprocess.run([sys.executable, "-m", "pip", "install", package_name])
+    """Install a single package from pip and add it to project.json with version."""
+    # 1. Install the package via pip
+    subprocess.run([sys.executable, "-m", "pip", "install", package_name], check=True)
+
+    # 2. Load or create project.json
+    if os.path.exists(PROJECT_FILE):
+        with open(PROJECT_FILE, "r") as f:
+            try:
+                config = json.load(f)
+            except json.JSONDecodeError:
+                config = {}
+    else:
+        config = {}
+
+    # Ensure dependencies is a dict
+    deps = config.get("dependencies")
+    if not isinstance(deps, dict):
+        deps = {}
+
+    # 3. Get installed version
+    try:
+        version = pkg_resources.get_distribution(package_name).version
+        deps[package_name] = f">={version}"
+    except pkg_resources.DistributionNotFound:
+        deps[package_name] = ""  # fallback if something goes wrong
+
+    # 4. Update config and save
+    config["dependencies"] = deps
+    with open(PROJECT_FILE, "w") as f:
+        json.dump(config, f, indent=4)
+
+    print(f"Package '{package_name}' installed and added to {PROJECT_FILE} (version >= {version}).")
 
 def main():
     if len(sys.argv) < 2:

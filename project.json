@@ -1,0 +1,9 @@
+{
+    "dependencies": {
+        "raylib": ">=5.5.0.2"
+    },
+    "scripts": {
+        "build": "python -m build",
+        "test": "echo Hello"
+    }
+}
